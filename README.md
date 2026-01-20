@@ -1,164 +1,172 @@
-# 🛡️ Руководство по сборке AmneziaWG для OpenWrt
+# 📖 Простое руководство по сборке AmneziaWG для OpenWrt
 
-![OpenWrt](https://img.shields.io/badge/OpenWrt-24.10.0-green)
-![AmneziaWG](https://img.shields.io/badge/AmneziaWG-1.0-blue)
-![License](https://img.shields.io/badge/License-MIT-yellow)
-![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen)
-
-> Полное руководство по сборке и настройке AmneziaWG (форк WireGuard) для OpenWrt
-
-## 📋 Содержание
-- [🚀 Быстрый старт](#быстрый-старт)
-- [📦 Предварительные требования](#предварительные-требования)
-- [🔧 Пошаговая инструкция](#пошаговая-инструкция)
-- [⚙️ Скрипты автоматизации](#скрипты-автоматизации)
-- [🛠️ Решение проблем](#решение-проблем)
-- [📚 Дополнительные материалы](#дополнительные-материалы)
-
-## 🚀 Быстрый старт
-
-### Вариант 1: Автоматическая сборка (рекомендуется)
+## 📦 1. Скачайте исходники OpenWrt
 
 ```bash
-## Клонируем репозиторий
-git clone https://github.com/ваш-ник/amneziawg-openwrt-guide.git
-cd amneziawg-openwrt-guide
-
-# Устанавливаем зависимости
-sudo bash scripts/setup_dependencies.sh
-
-# Запускаем сборку для Xiaomi Mi Router 4C
-bash scripts/build_amnezia.sh --device mi4c
-Вариант 2: Ручная сборка
-bash
 git clone https://github.com/openwrt/openwrt.git -b v24.10.0
+```
+```bash
 cd openwrt
-echo "src-git amnezia https://github.com/Slava-Shchipunov/awg-openwrt.git" >> feeds.conf.default
+```
+```bash
 ./scripts/feeds update -a
+```
+```bash
 ./scripts/feeds install -a
-cp ../amneziawg-openwrt-guide/configs/mi_router_4c.config .config
-make -j$(nproc) V=sc
-📦 Предварительные требования
-Аппаратные:
-Процессор: x86_64, 4+ ядер
-
-Память: 8+ ГБ RAM
-
-Диск: 30+ ГБ свободного места
-
-Интернет: Стабильное соединение
-
-Программные (Ubuntu/Debian):
-bash
-# Полный список в requirements.txt
-sudo apt update
-sudo apt install -y build-essential git python3 libncurses5-dev
-🔧 Пошаговая инструкция
-Шаг 1: Подготовка системы
-bash
-# Установите все зависимости
-sudo bash scripts/setup_dependencies.sh
-Шаг 2: Клонирование OpenWrt
-bash
-git clone https://github.com/openwrt/openwrt.git -b v24.10.0
-cd openwrt
-Шаг 3: Добавление AmneziaWG
-bash
+```
+## 🔧 2. Добавьте репозиторий AmneziaWG
+```bash
 echo "src-git amnezia https://github.com/Slava-Shchipunov/awg-openwrt.git" >> feeds.conf.default
-Шаг 4: Обновление feeds
-bash
+```
+Проверьте что добавилось:
+```bash
+cat feeds.conf.default
+```
+Должно быть:
+
+text
+src-git packages https://git.openwrt.org/feed/packages.git
+
+src-git luci https://git.openwrt.org/project/luci.git
+
+src-git routing https://git.openwrt.org/feed/routing.git
+
+src-git telephony https://git.openwrt.org/feed/telephony.git
+
+src-git amnezia https://github.com/Slava-Shchipunov/awg-openwrt.git
+
+## 📥 3. Установите пакеты AmneziaWG
+```bash
 ./scripts/feeds update -a
-./scripts/feeds install -a
-./scripts/feeds update amnezia
+
 ./scripts/feeds install -a -p amnezia
-Шаг 5: Настройка конфигурации
-Важно: AmneziaWG требует оригинальный WireGuard!
+```
+Проверьте установленные пакеты:
+```bash
+./scripts/feeds list -r amnezia
+```
+Должно показать:
 
-Выберите конфигурацию для вашего устройства:
+text
+amneziawg-tools                 - AmneziaWG userspace control program (awg)
 
-configs/mi_router_4c.config - Xiaomi Mi Router 4C
+kmod-amneziawg                  - AmneziaWG VPN Kernel Module
 
-configs/mi_router_3g.config - Xiaomi Mi Router 3G
+luci-i18n-amneziawg-ru         - luci-proto-amneziawg - ru translation
 
-configs/archer_c7.config - TP-Link Archer C7
+luci-proto-amneziawg           - Support for AmneziaWG VPN
 
-bash
-# Пример для Mi Router 4C
-cp ../amneziawg-openwrt-guide/configs/mi_router_4c.config .config
-Шаг 6: Сборка
-bash
-# Загрузка исходников
-make download -j$(nproc)
+## ⚙️ 4. Настройте сборку для Mi Router 4C
+```bash
+make menuconfig
+```
 
-# Сборка прошивки
-make -j$(nproc) V=sc 2>&1 | tee build.log
-Шаг 7: Проверка результатов
-bash
-# Используйте наш скрипт проверки
-bash ../amneziawg-openwrt-guide/scripts/check_build.sh
+🎮 Управление в menuconfig:
 
-# Или проверьте вручную
+- Esc - назад
+
+- Space - изменить выбор
+
+- / - поиск пакета
+
+- Enter - войти в подменю
+
+- F12 - сохранить скриншот
+
+## 🎯 Выберите устройство:
+
+
+**Target System:** MediaTek Ralink MIPS   ←  (архитектура процессора)
+
+**Subtarget:** MT76x8 based boards        ←  (семейство чипсетов)
+
+**Target Profile:** Xiaomi Mi Router 4C   ←  (конкретная модель роутера)
+
+⚡ Что означают символы:
+
+[ ] - Не собирать пакет
+
+[M] - Собрать отдельный .ipk модуль
+
+[*] - Встроить в прошивку
+
+## 🔑 5. Включите необходимые пакеты
+В меню **Kernel modules → Network Support:**
+
+[*] kmod-amneziawg
+
+[*] kmod-wireguard
+
+В меню **Network → VPN:**
+
+
+[*] amneziawg-tools
+
+[*] wireguard-tools
+
+В меню **LuCI → Protocols:**
+
+
+[*] luci-proto-amneziawg
+
+[*] luci-proto-wireguard
+
+В меню **Kernel modules → Cryptographic API modules:**
+
+
+[*] kmod-crypto-chacha20poly1305
+
+## 🚀 6. Запустите сборку
+```bash
+make -j$(nproc) V=sc
+```
+Сборка займет 2-4 часа!
+
+## ✅ 7. Проверьте результаты
+Найдите собранную прошивку:
+```bash
+find bin/targets -name "*.bin" -type f
+```
+Найдите пакеты AmneziaWG:
+```bash
 find bin -type f \( -name "*amnezia*" -o -name "*awg*" \) 2>/dev/null
-⚙️ Скрипты автоматизации
-Основные скрипты:
-scripts/build_amnezia.sh - Полная автоматическая сборка
+```
+💾 Готовые файлы будут здесь:
+```
+openwrt/
+├── bin/
+│   ├── targets/ramips/mt76x8/
+│   │   └── openwrt-*.bin          ← ВАША ПРОШИВКА
+│   └── packages/mipsel_24kc/       
+│       ├── base/
+│       │   ├── kmod-amneziawg_*.ipk  ← ПАКЕТЫ
+│       │   ├── kmod-wireguard_*.ipk
+│       │   └── amneziawg-tools_*.ipk
+│       └── luci/
+│           └── luci-proto-amneziawg_*.ipk
+├── .config                        ← СОХРАНИТЕ ЭТОТ ФАЙЛ!
+└── build.log                      ← Лог сборки
+```
+## ⚠️ Важное предупреждение:
+После прошивки своей сборкой:
 
-scripts/build_simple.sh - Упрощенная сборка
+Нельзя устанавливать kmod-пакеты из официальных репозиториев
 
-scripts/check_build.sh - Проверка результатов сборки
+Можно устанавливать только свои собранные .ipk файлы
 
-scripts/setup_dependencies.sh - Установка зависимостей
+Сохраните все .ipk файлы из папки bin/packages/
 
-Пример использования:
-bash
-# Сборка для разных устройств
-bash scripts/build_amnezia.sh --device mi4c
-bash scripts/build_amnezia.sh --device mi3g
-bash scripts/build_amnezia.sh --device archer
+## 🎯 Кратко:
+Скачали OpenWrt
 
-# Только загрузка исходников
-bash scripts/build_amnezia.sh --download-only
+Добавили AmneziaWG
 
-# Очистка
-bash scripts/build_amnezia.sh --clean
-🛠️ Решение проблем
-Частые ошибки:
-Ошибка: amneziawg depends on wireguard
-Решение: Убедитесь, что оба пакета включены в конфигурации
+Настроили под Mi Router 4C
 
-Ошибка: Нет места на диске
+Включили AmneziaWG + WireGuard
 
-bash
-# Добавьте swap
-sudo fallocate -l 8G /swapfile
-sudo chmod 600 /swapfile
-sudo mkswap /swapfile
-sudo swapon /swapfile
-Ошибка: Проблемы с menuconfig
+Собрали прошивку
 
-bash
-# Используйте автоматическую конфигурацию
-cp configs/mi_router_4c.config .config
-Полный список проблем и решений в docs/troubleshooting.md
+Установили на роутер
 
-📚 Дополнительные материалы
-Примеры конфигураций - Примеры awg.conf файлов
-
-FAQ - Ответы на частые вопросы
-
-Расширенные настройки - Для опытных пользователей
-
-🤝 Вклад в проект
-Мы приветствуем ваш вклад! Пожалуйста, прочитайте CONTRIBUTING.md перед созданием pull request.
-
-📄 Лицензия
-Этот проект распространяется под лицензией MIT. Подробнее в файле LICENSE.
-
-🙏 Благодарности
-Разработчикам OpenWrt
-
-Slava Shchipunov за AmneziaWG
-
-Сообществу за тестирование и отзывы
-
-Если это руководство было полезным, поставьте ⭐ на GitHub!
+Готово! У вас есть OpenWrt с AmneziaWG! 🎉
