@@ -78,7 +78,7 @@ cat feeds.conf.default
 ```
 Должно быть:
 
-text
+
 src-git packages https://git.openwrt.org/feed/packages.git
 
 src-git luci https://git.openwrt.org/project/luci.git
