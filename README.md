@@ -101,7 +101,7 @@ src-git amnezia https://github.com/Slava-Shchipunov/awg-openwrt.git
 ```
 Должно показать:
 
-text
+
 amneziawg-tools                 - AmneziaWG userspace control program (awg)
 
 kmod-amneziawg                  - AmneziaWG VPN Kernel Module
